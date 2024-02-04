@@ -5,7 +5,7 @@ const API_URL_SEARCH = "https://kinopoiskapiunofficial.tech/api/v2.1/films/searc
 
 getMovies(API_URL_TOP);
 
-async function getMovies(url){
+async function getMovies(url, isSearch) {
     const resp = await fetch(url, {
         headers: {
             "Content-type": "application/json",
@@ -14,7 +14,8 @@ async function getMovies(url){
     });
     const respData = await resp.json();
     console.log(respData);
-    showMovies(respData);
+    // если мы используем поиск прокидываем массив из films, если нет - items
+    showMovies(isSearch ? respData.films : respData.items);
 }
 
 function getClassByRate(vote) {
@@ -32,7 +33,7 @@ function showMovies(data) {
 
     document.querySelector(".movies").innerHTML = "";
 
-    data.items.forEach((movie) => {
+    data.forEach((movie) => {
        const movieItem = document.createElement("div");
        movieItem.classList.add("movie");
        movieItem.innerHTML = `
@@ -68,7 +69,8 @@ form.addEventListener("submit", (e) => {
     const apiSearchUrl = `${API_URL_SEARCH}${search.value}`;
     if (search.value) {
         console.log(apiSearchUrl);
-        getMovies(apiSearchUrl);
+        // добавляем флаг в функцию
+        getMovies(apiSearchUrl, true);
 
         search.value = "";
     }
