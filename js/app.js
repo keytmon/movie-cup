@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function (){
     // global params
     let searchValue = search.value;
     let pages = 0;
+    let currentPage = 1;
     // helpers
     const closeModal = () => {
         modalEl.classList.remove("modal--show");
@@ -94,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function (){
         const respJson = await resp.json();
         // если мы используем поиск прокидываем массив из films, если нет - items
         const data =  respJson[searchValue ?"films": "items"];
-        const pagesCount = respJson[searchValue ? "pagesCount" : "totalPages"]
+        const pagesCount = respJson[searchValue ? "pagesCount" : "totalPages"];
 
         console.log('=====>url', url);
         console.log('=====>respJson', respJson);
@@ -103,7 +104,9 @@ document.addEventListener("DOMContentLoaded", function (){
         if(pagesCount !== pages){
             pages = pagesCount
             createPageButtons(pagesCount)
+            currentPage = 1
         }
+        // updateActiveButtonStates(0)
     }
 
     function getClassByRate(vote) {
@@ -121,27 +124,96 @@ document.addEventListener("DOMContentLoaded", function (){
         data.forEach(renderMovies);
     }
 
-    function createPageButtons(pages) {
+    function createPageButtons(count) {
         const paginationContainer = document.querySelector(".pagination");
         paginationContainer.innerHTML = "";
+        console.log(pages);
+        const beforeButton = document.createElement("button");
+        beforeButton.classList.add("pagination__before");
+        paginationContainer.appendChild(beforeButton);
+        beforeButton.textContent = '<';
 
-        for (let i = 0; i < pages; i++) {
-            const pageButton = document.createElement("button");
-            pageButton.classList.add("pagination__item");
-            paginationContainer.appendChild(pageButton);
-            pageButton.textContent = i + 1;
-            pageButton.addEventListener("click", async () => {
-                await getMovies(i + 1);
-                updateActiveButtonStates(i);
-            });
+        const firstPages = [0, 1 ,2, 3, 4]
+        const pageNumbers = [0, 1 ,2, 3, 4, count - 1];
+        const lastPage = count - 1;
 
+        beforeButton.addEventListener("click", async () => {
+            currentPage -= 1
+            await getMovies(currentPage);
+            updateActiveButtonStates(currentPage);
+        });
+        for (let i = 0; i < count; i++) {
+            if(firstPages.includes(i)){
+                count = pages
+                const buttonNumber = i + 1;
+                const pageButton = document.createElement("button");
+                pageButton.classList.add("pagination__item");
+                paginationContainer.appendChild(pageButton);
+                pageButton.textContent = buttonNumber;
+                if(currentPage === buttonNumber){
+                    pageButton.classList.add("pagination__item--active")
+                }
+
+                pageButton.addEventListener("click", async () => {
+                    await getMovies(buttonNumber);
+                    currentPage = buttonNumber
+                    updateActiveButtonStates(buttonNumber);
+
+                    console.log("====> count " + count)
+                });
+            } else if (i === 5){
+                const pageButton = document.createElement("button");
+                pageButton.classList.add("pagination__more");
+                paginationContainer.appendChild(pageButton);
+                pageButton.textContent = '...';
+
+                pageButton.addEventListener("click", async () => {
+
+                });
+            } else if (i === lastPage) {
+                const pageButton = document.createElement("button");
+                pageButton.classList.add("pagination__item");
+                paginationContainer.appendChild(pageButton);
+                pageButton.textContent = lastPage + 1;
+                if(currentPage === lastPage){
+                    pageButton.classList.add("pagination__item--active")
+                }
+                pageButton.addEventListener("click", async () => {
+                    await getMovies(lastPage + 1);
+                    currentPage = lastPage;
+                    updateActiveButtonStates();
+                    console.log("======> current page " + currentPage)
+                    console.log("======> last page " + lastPage)
+                });
+            }
         }
+        const afterButton = document.createElement("button");
+        afterButton.classList.add("pagination__after");
+        paginationContainer.appendChild(afterButton);
+        afterButton.textContent = '>';
+
+        if (firstPages.includes(currentPage) || currentPage !== lastPage) {
+            afterButton.addEventListener("click", async () => {
+                currentPage += 1;
+                await getMovies(currentPage);
+                updateActiveButtonStates();
+            });
+            console.log("======> current page " + currentPage)
+            console.log("======> last page " + lastPage)
+
+        } else if (currentPage === lastPage){
+            afterButton.addEventListener("click", async () => {
+            await getMovies(lastPage);
+            updateActiveButtonStates();
+            });
+        }
+
     }
 
-    function updateActiveButtonStates(currentPageIndex) {
+    function updateActiveButtonStates() {
         const pageButtons = document.querySelectorAll(".pagination__item");
         pageButtons.forEach(
-            (button, i) => i === currentPageIndex
+            (button, i) => currentPage === i + 1
                 ? button.classList.add("pagination__item--active")
                 : button.classList.remove("pagination__item--active"));
     }

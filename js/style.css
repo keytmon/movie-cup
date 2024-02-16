@@ -180,15 +180,27 @@ ul li {
     justify-content: center;
 }
 
-.pagination__item {
+.pagination__item,
+.pagination__before,
+.pagination__after,
+.pagination__more{
     padding: 8px;
     margin: 8px;
     cursor: pointer;
+    border-radius: 25px;
+    background-color: #1a191f;
+    border-style: none;
+    color: white;
 }
 
 .pagination__item--active {
     font-weight: 800;
-    color: cornflowerblue;
+    background-color: rgba(100, 149, 237, 0.7);
+}
+
+.pagination__last--item--active {
+    font-weight: 800;
+    background-color: rgba(100, 149, 237, 0.7);
 }
 
 .hidden {
@@ -199,4 +211,14 @@ ul li {
     position: absolute;
     white-space: nowrap;
     width: 1px;
+}
+
+.pagination__item-last-page {
+    padding: 8px;
+    margin: 8px;
+    cursor: pointer;
+    border-radius: 25px;
+    background-color: #1a191f;
+    border-style: none;
+    color: white;
 }
