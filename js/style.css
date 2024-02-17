@@ -198,11 +198,6 @@ ul li {
     background-color: rgba(100, 149, 237, 0.7);
 }
 
-.pagination__last--item--active {
-    font-weight: 800;
-    background-color: rgba(100, 149, 237, 0.7);
-}
-
 .hidden {
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
@@ -213,12 +208,3 @@ ul li {
     width: 1px;
 }
 
-.pagination__item-last-page {
-    padding: 8px;
-    margin: 8px;
-    cursor: pointer;
-    border-radius: 25px;
-    background-color: #1a191f;
-    border-style: none;
-    color: white;
-}

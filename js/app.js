@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function (){
     // global constants
-    const API_KEY = "894c089f-9951-4e8c-8800-3a3c572d5eeb";
+    const API_KEY = "0722cc30-8468-46f3-9550-bda98540fc72";
+        // "894c089f-9951-4e8c-8800-3a3c572d5eeb";
     const API_URL_TOP =
         "https://kinopoiskapiunofficial.tech/api/v2.2/films/collections?type=TOP_POPULAR_ALL";
     const API_URL_SEARCH = "https://kinopoiskapiunofficial.tech/api/v2.1/films/search-by-keyword?keyword=";
@@ -106,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function (){
             createPageButtons(pagesCount)
             currentPage = 1
         }
-        // updateActiveButtonStates(0)
+
     }
 
     function getClassByRate(vote) {
@@ -128,22 +129,35 @@ document.addEventListener("DOMContentLoaded", function (){
         const paginationContainer = document.querySelector(".pagination");
         paginationContainer.innerHTML = "";
         console.log(pages);
-        const beforeButton = document.createElement("button");
-        beforeButton.classList.add("pagination__before");
-        paginationContainer.appendChild(beforeButton);
-        beforeButton.textContent = '<';
 
-        const firstPages = [0, 1 ,2, 3, 4]
-        const pageNumbers = [0, 1 ,2, 3, 4, count - 1];
+
+        const pageNumbers = [0, 1 ,2, 3, 4];
+        const firstPages = [1, 2 ,3, 4, 5];
         const lastPage = count - 1;
+        console.log("======> current page " + currentPage)
 
-        beforeButton.addEventListener("click", async () => {
-            currentPage -= 1
-            await getMovies(currentPage);
-            updateActiveButtonStates(currentPage);
-        });
+        function createBeforeButton() {
+            const beforeButton = document.createElement("button");
+            beforeButton.classList.add("pagination__before");
+            beforeButton.textContent = '<';
+            paginationContainer.appendChild(beforeButton);
+        if (firstPages.includes(currentPage)) {
+
+            beforeButton.addEventListener("click", async () => {
+                currentPage -= 1
+                await getMovies(currentPage);
+                updateActiveButtonStates(currentPage);
+                console.log("=================> page " + currentPage);
+            });
+        } else {
+                beforeButton.remove("pagination__before");
+                currentPage = 1;
+                updateActiveButtonStates(currentPage);
+        }
+    }
+        createBeforeButton(currentPage);
         for (let i = 0; i < count; i++) {
-            if(firstPages.includes(i)){
+            if(pageNumbers.includes(i)){
                 count = pages
                 const buttonNumber = i + 1;
                 const pageButton = document.createElement("button");
@@ -158,9 +172,8 @@ document.addEventListener("DOMContentLoaded", function (){
                     await getMovies(buttonNumber);
                     currentPage = buttonNumber
                     updateActiveButtonStates(buttonNumber);
-
-                    console.log("====> count " + count)
                 });
+
             } else if (i === 5){
                 const pageButton = document.createElement("button");
                 pageButton.classList.add("pagination__more");
@@ -172,41 +185,44 @@ document.addEventListener("DOMContentLoaded", function (){
                 });
             } else if (i === lastPage) {
                 const pageButton = document.createElement("button");
+                const lastPageNumber = lastPage + 1;
                 pageButton.classList.add("pagination__item");
                 paginationContainer.appendChild(pageButton);
-                pageButton.textContent = lastPage + 1;
-                if(currentPage === lastPage){
-                    pageButton.classList.add("pagination__item--active")
+                pageButton.textContent = lastPageNumber;
+
+                if (currentPage === lastPageNumber) {
+                    pageButton.classList.add("pagination__item--active");
                 }
+
                 pageButton.addEventListener("click", async () => {
-                    await getMovies(lastPage + 1);
-                    currentPage = lastPage;
-                    updateActiveButtonStates();
-                    console.log("======> current page " + currentPage)
-                    console.log("======> last page " + lastPage)
+                    await getMovies(lastPageNumber);
+                    currentPage = lastPageNumber;
+                    updateActiveButtonStates(lastPageNumber);
+
                 });
+
             }
         }
-        const afterButton = document.createElement("button");
-        afterButton.classList.add("pagination__after");
-        paginationContainer.appendChild(afterButton);
-        afterButton.textContent = '>';
 
-        if (firstPages.includes(currentPage) || currentPage !== lastPage) {
-            afterButton.addEventListener("click", async () => {
-                currentPage += 1;
-                await getMovies(currentPage);
-                updateActiveButtonStates();
-            });
-            console.log("======> current page " + currentPage)
-            console.log("======> last page " + lastPage)
+        function createAfterButton() {
 
-        } else if (currentPage === lastPage){
-            afterButton.addEventListener("click", async () => {
-            await getMovies(lastPage);
-            updateActiveButtonStates();
-            });
-        }
+            const afterButton = document.createElement("button");
+            afterButton.classList.add("pagination__after");
+            paginationContainer.appendChild(afterButton);
+            afterButton.textContent = '>';
+
+            if (currentPage <= 4) {
+                afterButton.addEventListener("click", async () => {
+                    currentPage += 1;
+                    await getMovies(currentPage);
+                    updateActiveButtonStates();
+                    });
+                console.log("======> last page " + lastPage)
+        } else {
+                afterButton.remove("pagination__after");
+            }
+    }
+        createAfterButton(currentPage)
 
     }
 
