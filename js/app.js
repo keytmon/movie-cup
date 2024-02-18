@@ -10,11 +10,12 @@ document.addEventListener("DOMContentLoaded", function (){
     const modalEl = document.querySelector(".modal");
     const moviesContainer = document.querySelector(".movies");
     const form = document.querySelector("form");
-    const search = document.querySelector(".header__search");
+    const header = document.querySelector("header");
+    const search = header.querySelector(".header__search");
     // global params
     let searchValue = search.value;
     let pages = 0;
-    let currentPage = Number(new URLSearchParams(window.location.search).get("page")) || 1;
+    let currentPage = 1;
     console.log('=====>currentPagewindow', currentPage)
     // helpers
     const closeModal = () => {
@@ -242,7 +243,6 @@ document.addEventListener("DOMContentLoaded", function (){
                 }
                 await getMovies(currentPage);
                 updateActiveButtonStates();
-                window.history.pushState({page: currentPage}, '', '?page=' + currentPage);
             });
             return afterButton
         }
@@ -261,6 +261,7 @@ document.addEventListener("DOMContentLoaded", function (){
             (button, i) =>  currentPage === Number(button.innerHTML)
                 ? button.classList.add("active")
                 : button.classList.remove("active"));
+        header.scrollIntoView()
     }
 
     form.addEventListener("submit", (e) => {
