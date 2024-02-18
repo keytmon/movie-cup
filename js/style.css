@@ -178,6 +178,7 @@ ul li {
 .pagination {
     display: flex;
     justify-content: center;
+    user-select: none;
 }
 
 .pagination__item,
@@ -193,7 +194,12 @@ ul li {
     color: white;
 }
 
-.pagination__item--active {
+.pagination__before.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.pagination__item.active {
     font-weight: 800;
     background-color: rgba(100, 149, 237, 0.7);
 }
