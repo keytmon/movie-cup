@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function (){
     // global constants
-    const API_KEY = "0722cc30-8468-46f3-9550-bda98540fc72";
+    const API_KEY =
+        "0722cc30-8468-46f3-9550-bda98540fc72";
         // "894c089f-9951-4e8c-8800-3a3c572d5eeb";
     const API_URL_TOP =
         "https://kinopoiskapiunofficial.tech/api/v2.2/films/collections?type=TOP_POPULAR_ALL";
@@ -16,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function (){
     let searchValue = search.value;
     let pages = 0;
     let currentPage = 1;
-    console.log('=====>currentPagewindow', currentPage)
+    console.log('=====>currentPage', currentPage)
     // helpers
     const closeModal = () => {
         modalEl.classList.remove("modal--show");
@@ -113,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function (){
     }
 
     function getClassByRate(vote) {
-        if (vote >= 7) {
+        if (vote >= 6.5) {
             return "green";
         } else if (vote > 5) {
             return "orange";
@@ -128,12 +129,14 @@ document.addEventListener("DOMContentLoaded", function (){
     }
 
     function createPageButtons(count) {
-        console.log("======> current page " + currentPage)
         // variables
         const paginationContainer = document.querySelector(".pagination");
         let firstPagesCountStart = 0;
         let firstPagesCountEnd = 4;
         const lastPage = count - 1;
+        let lastPagesCountEnd = lastPage;
+        let lastPagesCountStart = lastPage - 2;
+
         // helpers
         const updateFirstButtonState = (i)=> {
             if(i > 0 && beforeButton.classList.contains("disabled")){
@@ -144,30 +147,54 @@ document.addEventListener("DOMContentLoaded", function (){
             }
         }
         const updateAfterButtonState = (i)=> {
-            if(i > 0 && beforeButton.classList.contains("disabled")){
-                beforeButton.classList.remove("disabled");
+            if(i > 0 && afterButton.classList.contains("disabled")){
+                afterButton.classList.remove("disabled");
             }
-            if(i === 0 && !beforeButton.classList.contains("disabled")){
-                beforeButton.classList.add("disabled");
+            if(i >= count && !afterButton.classList.contains("disabled")){
+                afterButton.classList.add("disabled");
             }
         }
-        const createLastPageButton = () => {
-            const pageButton = document.createElement("button");
-            const lastPageNumber = lastPage + 1;
-            pageButton.classList.add("pagination__item");
-            paginationContainer.appendChild(pageButton);
-            pageButton.textContent = lastPageNumber;
 
-            if (currentPage === lastPageNumber) {
-                pageButton.classList.add("active");
+        const createLastPageButtons = (lastPagesCountStart, lastPagesCountEnd) => {
+            const lastPagesBlock = document.querySelector('.last-elements');
+            const lastElementsContainer = lastPagesBlock || document.createElement("div");
+            lastElementsContainer.innerHTML = "";
+            if(!lastPagesBlock){
+                lastElementsContainer.classList.add("last-elements");
+                paginationContainer.appendChild(lastElementsContainer);
             }
+            for (let i = lastPagesCountStart; i < count; i++) {
+                if(i <= lastPagesCountEnd && count > 7) {
+                    count = pages
+                    const pageButton = document.createElement("button");
+                    const lastPagesNumbers = i + 1;
+                    pageButton.classList.add("pagination__item");
+                    pageButton.textContent = lastPagesNumbers;
 
-            pageButton.addEventListener("click", async () => {
-                await getMovies(lastPageNumber);
-                currentPage = lastPageNumber;
-                updateActiveButtonStates(lastPageNumber);
+                    if (currentPage === lastPagesNumbers) {
+                        pageButton.classList.add("active");
+                    }
 
-            });
+                    pageButton.addEventListener("click", async () => {
+                        await getMovies(lastPagesNumbers);
+                        currentPage = lastPagesNumbers;
+                        updateActiveButtonStates(lastPagesNumbers);
+                        updateAfterButtonState(currentPage);
+
+                        if(currentPage <= lastPagesCountStart + 1){
+                            lastPagesCountStart-=1
+                            lastPagesCountEnd-=1
+                        } else if (lastPagesCountEnd < currentPage && currentPage !== lastPage + 1){
+                            lastPagesCountStart+=1
+                            lastPagesCountEnd+=1
+                        }
+                        createLastPageButtons(lastPagesCountStart, lastPagesCountEnd);
+                        updateFirstButtonState(currentPage);
+
+                    });
+                    lastElementsContainer.appendChild(pageButton);
+                }
+            }
         }
         const createPaginationPages = (startIndex, endIndex) => {
             const existedBlock = document.querySelector('.first-elements')
@@ -188,16 +215,23 @@ document.addEventListener("DOMContentLoaded", function (){
                         pageButton.classList.add("active")
                     }
                     pageButton.addEventListener("click", async () => {
-                        updateFirstButtonState(i)
-                        updateAfterButtonState(i)
+
                         await getMovies(buttonNumber);
-                        currentPage = buttonNumber
+                        currentPage = buttonNumber;
                         updateActiveButtonStates(buttonNumber);
+
+                        if(currentPage < firstPagesCountEnd && firstPagesCountStart !==0){
+                            firstPagesCountStart-=1;
+                            firstPagesCountEnd-=1;
+                        } else if(currentPage >= firstPagesCountEnd + 1){
+                            firstPagesCountStart+=1;
+                            firstPagesCountEnd+=1;
+                        }
+                        createPaginationPages(firstPagesCountStart, firstPagesCountEnd);
+                        updateFirstButtonState(i)
+                        updateAfterButtonState(currentPage)
                     });
                     elementsContainer.appendChild(pageButton);
-
-                } else if (i === lastPage) {
-
 
                 }
             }
@@ -216,13 +250,26 @@ document.addEventListener("DOMContentLoaded", function (){
             beforeButton.classList.add("pagination__before");
             beforeButton.textContent = '<';
             paginationContainer.appendChild(beforeButton);
-            if (currentPage - 1 <= 0) {
+            if (currentPage <= 1) {
                 beforeButton.classList.add("disabled");
             } else {
                 beforeButton.classList.remove("disabled");
             }
             beforeButton.addEventListener("click", async () => {
                 currentPage -= 1
+                updateFirstButtonState(currentPage - 1);
+                updateAfterButtonState(currentPage);
+
+                if(0 < currentPage < firstPagesCountEnd && firstPagesCountStart > 0){
+                    firstPagesCountStart-=1
+                    firstPagesCountEnd-=1
+                    createPaginationPages(firstPagesCountStart, firstPagesCountEnd);
+                } else if(firstPagesCountEnd < currentPage <= lastPagesCountStart){
+                    lastPagesCountStart-=1
+                    lastPagesCountEnd-=1
+                    createLastPageButtons(lastPagesCountStart, lastPagesCountEnd);
+                }
+
                 await getMovies(currentPage);
                 updateActiveButtonStates(currentPage);
 
@@ -234,12 +281,26 @@ document.addEventListener("DOMContentLoaded", function (){
             afterButton.classList.add("pagination__after");
             paginationContainer.appendChild(afterButton);
             afterButton.textContent = '>';
+            if (currentPage >= count){
+                afterButton.classList.add("disabled");
+            } else {
+                afterButton.classList.remove("disabled");
+            }
+
             afterButton.addEventListener("click", async () => {
-                if(currentPage) currentPage += 1;
-                if(currentPage - 1 > firstPagesCountEnd){
+
+                currentPage += 1;
+                updateFirstButtonState(currentPage);
+                updateAfterButtonState(currentPage);
+
+                if(firstPagesCountStart <= currentPage < firstPagesCountEnd && currentPage < lastPagesCountStart - 1){
                     firstPagesCountStart+=1
                     firstPagesCountEnd+=1
                     createPaginationPages(firstPagesCountStart, firstPagesCountEnd)
+                } else if(lastPagesCountStart <= currentPage && lastPagesCountEnd !== lastPage){
+                    lastPagesCountStart+=1;
+                    lastPagesCountEnd+=1;
+                    createLastPageButtons(lastPagesCountStart, lastPagesCountEnd)
                 }
                 await getMovies(currentPage);
                 updateActiveButtonStates();
@@ -250,7 +311,7 @@ document.addEventListener("DOMContentLoaded", function (){
         const beforeButton = createBeforeButton(currentPage);
         createPaginationPages(0, firstPagesCountEnd);
         createMoreButton();
-        createLastPageButton();
+        createLastPageButtons(lastPagesCountStart, lastPage);
         const afterButton = createAfterButton(currentPage)
 
     }
